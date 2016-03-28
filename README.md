@@ -2,7 +2,7 @@
 TriviaGame is a game application that presents questions to a user to answer
 like a regular trivia game.
 
-*SETUP*
+**SETUP**
 
 TriviaGame allows anyone to imput trivia questions to be answered later. The
 questions are entered using the create_question method, which will be explained
@@ -14,8 +14,7 @@ Each question is made up of the question, 1 correct answer, 3 wrong answers and
 Users are registered to play via the create_user method.
 
 
-HOW TO PLAY
-----------
+**HOW TO PLAY**
 
 Step 1.
 
@@ -62,7 +61,7 @@ An incorrect answer is worth 0 points.
 
 You score is an accumulation of all the points you earn answering questions.
 
-AFTER THE GAME
+**AFTER THE GAME**
 
 After you have finished answering the last question you will be presented with
 a message saying the game is over and the current score.
@@ -79,12 +78,12 @@ get_user_trivia_game_detailed method.
 
 Both of the above methods take the user name as a parameter.
 
-CANCELLING A GAME
+**CANCELLING A GAME**
 
 If you do not wish to finish a game you can cancel it with the
 cancel_trivia_game method. Note you can only use this for active games.
 
-OTHER
+**OTHER**
 
 You can always get your cumulative score with the get_user_score method, which
 takes the user name as an input parameter
@@ -100,8 +99,9 @@ API
 ------
 
 OBJECTS
+=======
 
-User:
+**User**
 
 Maintains the users who are registered to play. May have an email associated
 but not always.
@@ -112,7 +112,7 @@ Fields
 
 ----------------------
 
-Question:
+**Question**
 
 Stores the questions, possible answers and clues for the game. It has a form
 associated with it and its methods populate the forms.
@@ -136,7 +136,7 @@ Methods:
 
 -----------------------
 
-TriviaGame:
+**TriviaGame**
 
 Maintains the status of the TriviaGame by registering Turns and selecting
 question for the turn. Also creates a GameSummary object for when the game
@@ -170,7 +170,7 @@ Methods
 
 -----------------------
 
-Turn:
+**Turn**
 
 Repository of all information regarding a turn in the TriviaGame.
 
@@ -196,7 +196,7 @@ Methods
 
 -----------------------
 
-GameSummary:
+**GameSummary**
 
 Maintains information about a game that has been completed. Primarily
 uses Turns objects to populate forms with that information
@@ -223,7 +223,7 @@ Methods
 
 -------------------
 
-Score:
+**Score**
 
 Maintains the countable information for a user over all games.
 
@@ -249,7 +249,7 @@ Methods
 ENDPOINTS
 -----------
 
-create_user
+**create_user**
 
     Creates a user object. Will check if a user with that name already exists
     and raise and exception accordingly.
@@ -261,7 +261,7 @@ params
 response
 - StringMessage
 
-new_triva_game
+**new_triva_game**
 
     Creates a new trivia game with the specified number of rounds for the 
     user identified in the request paramter. The game is a TriviaGame object.
@@ -273,7 +273,7 @@ params
 response
 - TriviaGameForm
 
-get_trivia_game
+**get_trivia_game**
 
     Retrieves a TriviaGame object based on the urlsafe_trivia_game_key and 
     checks if the game is over. If not it intiates the game by grabbing a
@@ -287,7 +287,7 @@ params
 response
 - TriviaGameForm
 
-take_turn
+**take_turn**
 
     Checks if the game is still active and if so checks the answer for the 
     question for correctness against the Question object for this turn. If the
@@ -304,7 +304,7 @@ params
 response
 - TriviaGameForm
 
-get_clue
+**get_clue**
 
     Retrieves a clue from the current question object stored in the TriviaGame
     object. It checks to see that a clue is only asked for twice, afterwards 
@@ -316,7 +316,7 @@ params
 response
 - StringMessage
 
-create_question
+**create_question**
 
     Creates a Question object, which is basically a question with 4 possible
     answers, only one of which is correct. The will also contain 2 clues to
@@ -334,7 +334,7 @@ params
 response
 - QuestionForm
 
-get_question
+**get_question**
 
     Test method to confirm that a Question object was being stored in the
     datastore. May be modified later for a more practical use
@@ -344,7 +344,7 @@ params
 response
 - TriviaQuestionForm
 
-answer_question
+**answer_question**
 
     Test method to confirm that a Question object could be retireved from the
     datastore and answered. May be modified later for a more practical use.
@@ -356,7 +356,7 @@ params
 response
 - StringMessage
 
-get_trivia_game_history
+**get_trivia_game_history**
 
     Retrieves the detailed game history for a completed game. The game is
     retrieved by the urlsafe_trivia_game_key and the information for the game
@@ -368,7 +368,7 @@ params
 response
 - GameDetailForms
 
-get_user_trivia_game_summary
+**get_user_trivia_game_summary**
 
     Retrieves a summary of all of an individual user's games. Displays basic
     information stored in the GameSummary object, such as the score, number of
@@ -380,7 +380,7 @@ params
 response
 - GameSummaryForms
 
-get_user_trivia_game_detail
+**get_user_trivia_game_detail**
 
     Retrieves details of all of an individual user's games. Displays detailed
     information stored in the GameSummary object, such as the question asked,
@@ -392,7 +392,7 @@ params
 response
 - GameDetailForms
 
-get_user_games
+**get_user_games**
 
     Retrieves the active games of the user specified in the request. Checks
     all the game objects for which this user is the key and checks if the game
@@ -404,7 +404,7 @@ params
 response
 - TriviaGameForms
 
-cancel_trivia_game
+**cancel_trivia_game**
 
     Cancels the trivia game specified in the request parameter. This is done
     by removing the Turn objects associated with this game, then removing the 
@@ -416,7 +416,7 @@ params
 respnse
 - StringMessage
 
-get_user_score
+**get_user_score**
 
     Retrieves the cumulative score of all games for the user specified in the
     request parameter.
@@ -427,7 +427,7 @@ params
 response
 - ScoreForm
 
-get_high_scores
+**get_high_scores**
 
     Retrieves all the score objects for all the users sorted in descending 
     order.
@@ -437,7 +437,7 @@ params
 response
 - ScoreForms
 
-get_rankings
+**get_rankings**
 
     Retrieves all the score objects for all the users sorted in descending 
     order. Then using the information in those objects, specifically score,
@@ -450,7 +450,7 @@ params
 response
 - ScoreForms
 
-_getPlayerReminder  STATIC METHOD
+**_getPlayerReminder**  STATIC METHOD
 
     Builds out the message body for the cron job task SendReminderEmail.
     Using the TriviaGame object and name it personalizes a message to remind 
@@ -463,7 +463,7 @@ params
 response
 - String
 
-_cache_average_correct_per_game  STATIC METHOD
+**_cache_average_correct_per_game**  STATIC METHOD
 
     A queued task that calculates the average number of correct answers
     per game as a percentage and stores a string message with the result
@@ -474,8 +474,9 @@ params
 response
 
 CRONS
+=====
 
-SendReminderEmail
+**SendReminderEmail**
 
    This class's get method is called every hour to check to see what games 
    have not been finished. If it finds the games, and the associated user
@@ -484,8 +485,9 @@ SendReminderEmail
    of the game
 
 TASKQUEUE
+=========
 
-UpdateAverageCorrectPerGame
+**UpdateAverageCorrectPerGame**
 
     This class's post method is called when the get_trivia_game method places
     it on the task queue. It calls the cache_average_correct_per_game method
