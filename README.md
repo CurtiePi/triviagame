@@ -64,8 +64,6 @@ You score is an accumulation of all the points you earn answering questions.
 
 AFTER THE GAME
 
--------------
-
 After you have finished answering the last question you will be presented with
 a message saying the game is over and the current score.
 
@@ -83,14 +81,10 @@ Both of the above methods take the user name as a parameter.
 
 CANCELLING A GAME
 
------------------
-
 If you do not wish to finish a game you can cancel it with the
 cancel_trivia_game method. Note you can only use this for active games.
 
 OTHER
-
------
 
 You can always get your cumulative score with the get_user_score method, which
 takes the user name as an input parameter
@@ -103,11 +97,9 @@ The rankings are based on score, ratio of correct answers to number of
 questions asked and the number of clues used.
 
 API
-
 ------
 
 OBJECTS
--------
 
 User
 
@@ -118,6 +110,7 @@ Fields
  - name:             text
  - email:            text
 
+----------------------
 
 Question
 
@@ -134,12 +127,17 @@ Fields
 
 -- methods:
   new_question: CLASS METHOD instantiates a new Question object
+
   to_form : populates QuestionForm
+
   to_trivia_form: populates TriviaQuestionForm
+
   is_correct_answer: determines if an answer is the correct answer
 
+-----------------------
 
 TriviaGame
+
 Maintains the status of the TriviaGame by registering Turns and selecting
 question for the turn. Also creates a GameSummary object for when the game
 ends and clears out game information when the game is cancelled. 
@@ -154,19 +152,31 @@ Fields
  - current_score:    integer
 
 -- associated forms: TriviaGameForm, TriviaGameForms
+
 -- methods:
    new_game: CLASS METHOD  creates a new TriviaGame object
+
    to_form: populates the TriviaGameForm
+
    end_game: Updates the game status to over and creates a GameSummary object
+
    record_score: Tallies a user score across all game. Called by end_game
+
    get_question_from_pool: selects a Question key from a pool of keys
+
    remove_question_from_pool: removes a Question key from the pool of keys
+
    update_current_score: keeps track of the score for the current game
+
    register_turn: registers a Turn object with the game
+
    get_latest_turn: getter method for the current turn
+
    get_current_question: getter method for the current question
+
    clear_game: removes all information for this TriviaGame
 
+-----------------------
 
 Turn
 
@@ -183,14 +193,21 @@ Fields
 - is_finished:       boolean
 
 -- associated forms:
+
 -- methods:
    new_turn: CLASS METHOD instantiates a new Turn object
+
    setCorrectAnswer: sets whether the question was answered correctly or not
+
    setFinished: sets whether the turn is over (the question has been answered)
+
    usedClue: increments the number of clues used
+
    setPoints: sets the points earned this turn
+
    setAnswerGiven: records the anwser given by the player (correct or not)
 
+-----------------------
 
 GameSummary
 
@@ -206,13 +223,18 @@ Fields
 
 -- associated forms: GameSummaryForm, GameDetailForm, GameSummaryForms
                      GameDetailForms
+
 -- methods
    new_game_summary: CLASS METHOD instantiates a new GameSummary object
+
    to_summary_form: populates a GameSummaryForm
+
    to_detail_form: populates a GameDetailForm
+
    aggregate_data: aggregates data over all the Turns object contained in this
                    object.
 
+-------------------
 
 Score
 
@@ -226,22 +248,28 @@ Fields
  - clues_used:       integer
 
 -- associated forms: ScoreForm, ScoreForms, RankForm, RankForms, DataForm
+
 -- methods
    to_data_form: populates the DataForm with all information
+
    to_score_form: poputlate the ScoreForm with score information
 
 
 METHODS
 -----------
 create_user
-- params:
-    user_name
-    email
-- descripion: 
+
+params:
+   - user_name
+   - email
+
+descripion:
+ 
     Creates a user object. Will check if a user with that name already exists
     and raise and exception accordingly.
-- response:
-    StringMessage
+
+response:
+   - StringMessage
 
 new_triva_game
 - params:
