@@ -1,0 +1,67 @@
+Some desgin desicions
+
+The original concept called for to be Question objects which would
+contain the questions, answeres and clues, and would be a fairly independent
+object.
+
+The though behind storing the answers as a JsonProperty was because the goal 
+was to answer questions with a lable (i.e. A, B, C or D) however due to time
+constraints I wasn't able to implement the original idea. Answers was left as 
+a JsonProperty in case I get time to revisit it. Also, the correct answer was
+origninaly stored as a separate class variable, but after getting to the 
+answer_question method I realized that was totally unnecessary.
+
+Also, whenevery I needed to store other objects, I initially went with storing 
+the urlsafe keys in repeatable TextProperty fields. However, that lead to the 
+realization that I could not use the get_by_urlsafe method in utils.py. Also I
+didn't realize that KeyProperty fields could also be repeatable.
+
+I thought it best to interact with the entities in the models.py classes via
+ndb instead of importing the get_by_urlsafe method. This led to the changing
+of repeatable TextProperty fields to repeatable KeyProperty fields. This 
+creates one less, though minor, dependancy. I am open to other opinions on 
+this matter
+
+As for the TriviaGame object there were a number of concerns. First was how
+to select a question for each of the turns without repeating a question during
+the game. Originally the idea was to pull questions from the datastore using the 
+NOT IN comparator. I was not happy to see there isn't one. So the solution was
+to pull all the Question keys and put them in a pool, and as I load a new
+question the key is removed from the pool.
+
+The upside is I don't repeat questions, the downside is if someone adds a new
+question then it will not get asked in the current game, though I think this 
+give me the idea for a new taskqueue (find_new_questions).
+
+Also, I use Turns to hold information per each turn of the game. However Turns
+are primarily used for the GameSummary class to get game summaries and game
+details. Instead of having to constantly drill down into the Turns object to 
+get the current score or current question for the game, I added two more class
+variables to the TriviaGame class.
+
+Speaking of the GameSummary class, one time costly decision was to try to 
+incorporate scoring in this class as well. That idea become too convoluted when
+trying to create rankings and high score leader boards. I found it much simpler
+and more efficient to create the Score class.
+
+What would I like to change?
+
+I would like to make it a true two player game.
+
+I would like to refactor the GameSummary code, try to simplify it a bit more.
+
+For all the model objects, there may be instances were I may not need to store
+so many KeyProperty objects, so that would be high on my list to refactor.
+
+Definitely create a way to insert new questions into ongoing games. Maybe in
+between turns check memcache for a flag and if it's True pull in the new
+questions.
+
+What did I learn?
+
+I learned a couple of python tricks like using the key parameter when sorting a 
+list of tuples. I also learned the number of different ways of querying for
+entities in the datastore, though I will admit I sometime find the
+documentaion a bit confusing, as if it's not being updated frequently.
+
+Overall this project was fun, and challenging.

@@ -21,6 +21,7 @@ class TriviaGame(ndb.Model):
     question_pool = ndb.KeyProperty(kind='Question', repeated=True)
     turn_keys = ndb.KeyProperty(kind='Turn', repeated=True)
     current_question = ndb.KeyProperty(kind='Question')
+    current_score= ndb.IntegerProperty(required=True, default=0)
 
     @classmethod
     def new_game(cls, user, game_rounds):
@@ -46,6 +47,7 @@ class TriviaGame(ndb.Model):
         form.urlsafe_key = self.key.urlsafe()
         form.user_name = self.user.get().name
         form.rounds_remaining = self.rounds_remaining
+        form.current_score = self.current_score
         form.game_over = self.game_over
         form.message = message
         if options:
@@ -100,6 +102,9 @@ class TriviaGame(ndb.Model):
         self.put()
         return removed_key
 
+    def update_current_score(self, points):
+        self.current_score += points
+
     def register_turn(self, turn_key):
         self.turn_keys.append(turn_key)
         self.put()
@@ -118,10 +123,11 @@ class TriviaGameForm(messages.Message):
     """GameForm for outbound game state information"""
     urlsafe_key = messages.StringField(1, required=True)
     rounds_remaining = messages.IntegerField(2, required=True)
-    user_name = messages.StringField(3, required=True)
-    game_over = messages.BooleanField(4, required=True)
-    message = messages.StringField(5, required=True)
-    options = messages.StringField(6, repeated=True)
+    current_score = messages.IntegerField(3, required=True)
+    user_name = messages.StringField(4, required=True)
+    game_over = messages.BooleanField(5, required=True)
+    message = messages.StringField(6, required=True)
+    options = messages.StringField(7, repeated=True)
 
 class TriviaGameForms(messages.Message):
     """Return multiple ScoreForms"""
@@ -274,7 +280,6 @@ class Question(ndb.Model):
     def to_trivia_form(self):
         """Returns a QuestionForm representation of the Question"""
         form = TriviaQuestionForm()
-        #form.urlsafe_key = self.key.urlsafe()
         form.question = self.question
         
         answerlist = list(self.answers.values())

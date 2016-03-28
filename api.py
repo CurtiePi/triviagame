@@ -72,7 +72,7 @@ class TriviaApi(remote.Service):
 
         q_key = game.get_current_question()
         question = q_key.get()
-        answers = list(question.answers.values())
+        (ansA, ansB, ansC, ansD) = list(question.answers.values())
                     
         body = "Hi {},\n".format(name)
         body += "You started a trivia game, but you haven't "
@@ -85,7 +85,7 @@ class TriviaApi(remote.Service):
 
         body += "Here is where your game stands: "
         body += "Question: {}".format(question.question)
-        body += "A.{}\nB.{}\nC.{}\nD.{}\n".format(answers)
+        body += "A.{}\nB.{}\nC.{}\nD.{}\n".format(ansA, ansB, ansC, ansD)
         body += "You have used {} clues\n".format(clues_used)
         body += "You have {} more questions\n".format(game.rounds_remaining)
 
@@ -94,17 +94,17 @@ class TriviaApi(remote.Service):
     @staticmethod
     def _cache_average_correct_per_game():
         """Populates memcache with the average correct answers per game"""
-        games = Game.query(Game.game_over == True).fetch()
+        games = TriviaGame.query(TriviaGame.game_over == True).fetch()
         if games:
             correct_count = 0
             count = len(games)
             for game in games:
-                turns = games.turn_keys
+                turns = game.turn_keys
          
                 total_correct_answers = sum([turn.get().is_correct
                                                     for turn in turns])
             average = float(total_correct_answers)/count
-            memcache.set(MEMCACHE_CORRECT_ANSWER_AVAERAGE,
+            memcache.set(MEMCACHE_CORRECT_ANSWER_AVERAGE,
                          'The average correct answer per game is {:.2f}'.format(average))
 
     @endpoints.method(request_message=NEW_TRIVIA_GAME_REQUEST,
@@ -173,10 +173,13 @@ class TriviaApi(remote.Service):
         if question.is_correct_answer(request.ans):
             result = "You are correct. "
             turn.setCorrectAnswer()
+            points = question.value 
             if turn.clues_used != 0:
-                turn.setPoints(5 - 2**turn.clues_used)
-            else:
-                turn.setPoints(5)
+                points -= 2**turn.clues_used
+
+            turn.setPoints(points)
+            game.update_current_score(points)
+            
         else:
             result = "You are not correct. "
 
@@ -322,7 +325,7 @@ class TriviaApi(remote.Service):
                       name='get_user_trivia_game_summary',
                       http_method='GET')
     def get_user_trivia_game_summary(self, request):
-        """Returns all of an individual User's scores"""
+        """Returns a summary of an individual User's games"""
         user = User.query(User.name == request.user_name).get()
         if not user:
             raise endpoints.NotFoundException(
@@ -336,7 +339,7 @@ class TriviaApi(remote.Service):
                       name='get_user_trivia_game_detail',
                       http_method='GET')
     def get_user_trivia_game_detail(self, request):
-        """Returns all of an individual User's scores"""
+        """Returns a detailed listing of an individual User's games"""
         user = User.query(User.name == request.user_name).get()
         if not user:
             raise endpoints.NotFoundException(
@@ -441,7 +444,7 @@ class TriviaApi(remote.Service):
             name = score.user.get().name
             denominator = float(score.num_correct + score.num_incorrect)
             factor = score.num_correct/denominator
-            rank = (10 * score.score * f) - score.clues_used
+            rank = round((10 * score.score * factor)) - score.clues_used
             tup = (name, rank)
             ranks.append(tup)
 
