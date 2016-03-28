@@ -54,10 +54,10 @@ out of clues
 
 Scoring.
 
-A correct answer is worth a base 5 points. 
-A correct answer using one clue is 3 points.
-A correct answer using two clues is 1 point.
-An incorrect answer is worth 0 points.
+  A correct answer is worth a base 5 points. 
+  A correct answer using one clue is 3 points.
+  A correct answer using two clues is 1 point.
+  An incorrect answer is worth 0 points.
 
 You score is an accumulation of all the points you earn answering questions.
 
@@ -264,7 +264,7 @@ response
 **new_triva_game**
 
     Creates a new trivia game with the specified number of rounds for the 
-    user identified in the request paramter. The game is a TriviaGame object.
+    user identified in the request parameter. The game is a TriviaGame object.
 
 params
 - rounds
@@ -307,7 +307,7 @@ response
 **get_clue**
 
     Retrieves a clue from the current question object stored in the TriviaGame
-    object. It checks to see that a clue is only asked for twice, afterwards 
+    object. It checks to see that only two clues are given, afterwards 
     a message is given that the user has no more clues remaining.
 
 params
