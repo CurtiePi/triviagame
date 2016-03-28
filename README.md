@@ -2,7 +2,7 @@
 TriviaGame is a game application that presents questions to a user to answer
 like a regular trivia game.
 
-SETUP
+*SETUP*
 
 TriviaGame allows anyone to imput trivia questions to be answered later. The
 questions are entered using the create_question method, which will be explained
