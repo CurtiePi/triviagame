@@ -3,6 +3,7 @@ TriviaGame is a game application that presents questions to a user to answer
 like a regular trivia game.
 
 SETUP
+
 TriviaGame allows anyone to imput trivia questions to be answered later. The
 questions are entered using the create_question method, which will be explained
 in the API section of the document. 
@@ -17,6 +18,7 @@ HOW TO PLAY
 ----------
 
 Step 1.
+
 Create a trivia game via the new_trivia_game method. You will be asked to 
 enter the name of a registered player, and the number of rounds you wish to 
 play. There is one question per round.
@@ -25,12 +27,14 @@ When you create the game, you should get an game key which you will use to
 continue playing.
 
 Step 2.
+
 Now that you have created the trivia game, you must get the game using the 
 get_trivia_game method which expects the game key as an input parameter.
 
 Once you get the game you will be presented with your first question.
 
 Step 3a.
+
 Now the game has started, you use the take_turn method to answer the question
 presented to you. This method also expects the game key an input parameter as
 well as the answer to the question.
@@ -42,6 +46,7 @@ When you have exhausted your allotment of rounds you will be informed that the
 game is over.
 
 Step 3b.
+
 If you cannot answer a question immediately, you can opt to use the get_clue
 method to get a clue. It also expects the game key as a parameter.
 
@@ -49,6 +54,7 @@ You can use a maximum of 2 clues, after which you will be informed that you are
 out of clues
 
 Scoring.
+
 A correct answer is worth a base 5 points. 
 A correct answer using one clue is 3 points.
 A correct answer using two clues is 1 point.
@@ -57,7 +63,9 @@ An incorrect answer is worth 0 points.
 You score is an accumulation of all the points you earn answering questions.
 
 AFTER THE GAME
+
 -------------
+
 After you have finished answering the last question you will be presented with
 a message saying the game is over and the current score.
 
@@ -74,12 +82,16 @@ get_user_trivia_game_detailed method.
 Both of the above methods take the user name as a parameter.
 
 CANCELLING A GAME
+
 -----------------
+
 If you do not wish to finish a game you can cancel it with the
 cancel_trivia_game method. Note you can only use this for active games.
 
 OTHER
+
 -----
+
 You can always get your cumulative score with the get_user_score method, which
 takes the user name as an input parameter
 
@@ -91,6 +103,7 @@ The rankings are based on score, ratio of correct answers to number of
 questions asked and the number of clues used.
 
 API
+
 ------
 
 OBJECTS
