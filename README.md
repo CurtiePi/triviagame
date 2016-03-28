@@ -54,10 +54,10 @@ out of clues
 
 Scoring.
 
-  A correct answer is worth a base 5 points. 
-  A correct answer using one clue is 3 points.
-  A correct answer using two clues is 1 point.
-  An incorrect answer is worth 0 points.
+   A correct answer is worth a base 5 points. 
+   A correct answer using one clue is 3 points.
+   A correct answer using two clues is 1 point.
+   An incorrect answer is worth 0 points.
 
 You score is an accumulation of all the points you earn answering questions.
 
