@@ -120,6 +120,7 @@ Fields
 
 
 Question
+
 Stores the questions, possible answers and clues for the game. It has a form
 associated with it and its methods populate the forms.
 
@@ -130,6 +131,7 @@ Fields
 - clues:             text     - repeatable
 
 -- associated forms: QuestionForm, TriviaQuestionForm, ClueForm
+
 -- methods:
   new_question: CLASS METHOD instantiates a new Question object
   to_form : populates QuestionForm
