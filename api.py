@@ -3,7 +3,6 @@ This can also contain game logic. For more complex games it would be wise to
 move game logic to another file. Ideally the API will be simple, concerned
 primarily with communication to/from the API's users."""
 
-
 import logging
 import endpoints
 from protorpc import remote, messages, message_types
@@ -13,7 +12,7 @@ from google.appengine.api import taskqueue
 
 from models import User, Question, Turn, TriviaGame, GameSummary, Score
 
-from models import QuestionForm, TriviaQuestionForm, ClueForm,TriviaGameForm, \
+from models import QuestionForm, TriviaQuestionForm, ClueForm, TriviaGameForm,\
     NewTriviaGameForm, GameSummaryForm, GameSummaryForms, GameDetailForm, \
     GameDetailForms, TriviaGameForms, DataForm, ScoreForm, ScoreForms, \
     RankForm, RankForms, StringMessage
@@ -21,31 +20,37 @@ from models import QuestionForm, TriviaQuestionForm, ClueForm,TriviaGameForm, \
 from utils import get_by_urlsafe, getFirstKey
 
 NEW_TRIVIA_GAME_REQUEST = endpoints.ResourceContainer(NewTriviaGameForm)
+
 GET_TRIVIA_GAME_REQUEST = endpoints.ResourceContainer(
-        urlsafe_trivia_game_key=messages.StringField(1),
-)
+        urlsafe_trivia_game_key=messages.StringField(1),)
+
 NEW_QUESTION_REQUEST = endpoints.ResourceContainer(QuestionForm)
+
 GET_QUESTION_REQUEST = endpoints.ResourceContainer(
-    message_types.VoidMessage,
-)
+    message_types.VoidMessage,)
+
 GENERIC_GET_REQUEST = endpoints.ResourceContainer(
-    message_types.VoidMessage,
-)
+    message_types.VoidMessage,)
+
+HI_SCORE_GET_REQUEST = endpoints.ResourceContainer(
+    result_num=messages.IntegerField(1, required=False, default=0),)
+
 TAKE_TURN_REQUEST = endpoints.ResourceContainer(
     urlsafe_trivia_game_key=messages.StringField(1),
-    ans = messages.StringField(2),
-)
+    ans=messages.StringField(2),)
+
 GET_CLUE_REQUEST = endpoints.ResourceContainer(
-        urlsafe_trivia_game_key=messages.StringField(1),
-)
+        urlsafe_trivia_game_key=messages.StringField(1),)
+
 ANSWER_QUESTION_REQUEST = endpoints.ResourceContainer(
     urlsafe_question_key=messages.StringField(1),
-    answer = messages.StringField(2),
-)
+    answer=messages.StringField(2),)
+
 USER_REQUEST = endpoints.ResourceContainer(user_name=messages.StringField(1),
                                            email=messages.StringField(2))
 
 MEMCACHE_CORRECT_ANSWER_AVERAGE = 'CORRECT_ANSWER_AVERAGE'
+
 
 @endpoints.api(name='trivia', version='v1')
 class TriviaApi(remote.Service):
@@ -62,6 +67,11 @@ class TriviaApi(remote.Service):
                     'A User with that name already exists!')
         user = User(name=request.user_name, email=request.email)
         user.put()
+
+        # Create an associated Score for this user
+
+        score = Score(user=user.key)
+        score.put()
         return StringMessage(message='User {} created!'.format(
                 request.user_name))
 
@@ -73,7 +83,7 @@ class TriviaApi(remote.Service):
         q_key = game.get_current_question()
         question = q_key.get()
         (ansA, ansB, ansC, ansD) = list(question.answers.values())
-                    
+
         body = "Hi {},\n".format(name)
         body += "You started a trivia game, but you haven't "
         body += "answered a quesion in over an hour.\n"
@@ -100,12 +110,12 @@ class TriviaApi(remote.Service):
             count = len(games)
             for game in games:
                 turns = game.turn_keys
-         
                 total_correct_answers = sum([turn.get().is_correct
-                                                    for turn in turns])
+                                            for turn in turns])
             average = float(total_correct_answers)/count
             memcache.set(MEMCACHE_CORRECT_ANSWER_AVERAGE,
-                         'The average correct answer per game is {:.2f}'.format(average))
+                         'Average correct answer      \
+                         per game: {:.2f}'.format(average))
 
     @endpoints.method(request_message=NEW_TRIVIA_GAME_REQUEST,
                       response_message=TriviaGameForm,
@@ -135,18 +145,26 @@ class TriviaApi(remote.Service):
     def get_trivia_game(self, request):
         """Return the current game state."""
         game = get_by_urlsafe(request.urlsafe_trivia_game_key, TriviaGame)
-        if game:  
+        if game:
             user_key = game.user
             question_key = game.get_question_from_pool()
-            if len(game.turn_keys) == 0:
-                #Create a new turn
-                turn = Turn.new_turn(game.key, user_key, question_key)
-                game.remove_question_from_pool(question_key)
-                game.register_turn(turn.key)
 
-            #Get a question object 
-            question = get_by_urlsafe(question_key.urlsafe(), Question)
-            return game.to_form(question.question, question.answers.values())
+            if question_key:
+                if len(game.turn_keys) == 0:
+                    # Create a new turn
+                    turn = Turn.new_turn(game.key, user_key, question_key)
+                    game.remove_question_from_pool(question_key)
+                    game.register_turn(turn.key)
+
+                # Get a question object
+                question = get_by_urlsafe(question_key.urlsafe(), Question)
+                return game.to_form(question.question,
+                                    question.answers.values())
+            else:
+                game.clear_game()
+                g_form = game.to_form('No available questions, Game aborted!')
+                game.key.delete()
+                return g_form
         else:
             raise endpoints.NotFoundException('Game not found!')
 
@@ -157,7 +175,7 @@ class TriviaApi(remote.Service):
                       http_method='PUT')
     def take_turn(self, request):
         """ Take turn by answering a question in the triviagame"""
-        #Get the game in question
+        # Get the game in question
         game = get_by_urlsafe(request.urlsafe_trivia_game_key, TriviaGame)
 
         if game.game_over:
@@ -169,22 +187,21 @@ class TriviaApi(remote.Service):
         turn = get_by_urlsafe(turn_key.urlsafe(), Turn)
 
         question = get_by_urlsafe(turn.question_key.urlsafe(), Question)
-    
+
         if question.is_correct_answer(request.ans):
             result = "You are correct. "
-            turn.setCorrectAnswer()
-            points = question.value 
+            turn.set_correct_answer()
+            points = question.value
             if turn.clues_used != 0:
                 points -= 2**turn.clues_used
 
-            turn.setPoints(points)
+            turn.set_points(points)
             game.update_current_score(points)
-            
         else:
             result = "You are not correct. "
 
-        turn.setAnswerGiven(request.ans)
-        turn.setFinished()
+        turn.set_answer_given(request.ans)
+        turn.set_finished()
         turn.put()
 
         if game.rounds_remaining < 1:
@@ -194,13 +211,12 @@ class TriviaApi(remote.Service):
             user_key = game.user
             question_key = game.get_question_from_pool()
             if question_key:
-                #Create a new turn
+                # Create a new turn
                 turn = Turn.new_turn(game.key, user_key, question_key)
                 game.remove_question_from_pool(question_key)
                 game.register_turn(turn.key)
 
-
-                #Get a question object 
+                # Get a question object
                 question = get_by_urlsafe(question_key.urlsafe(), Question)
                 game.put()
                 message = result + question.question
@@ -209,7 +225,6 @@ class TriviaApi(remote.Service):
                 game.end_game()
                 return game.to_form(result + ' No more questions, Game Over!')
 
-
     @endpoints.method(request_message=NEW_QUESTION_REQUEST,
                       response_message=QuestionForm,
                       path='question/create',
@@ -217,11 +232,11 @@ class TriviaApi(remote.Service):
                       http_method='POST')
     def create_question(self, request):
         """Creates a question that can be used in the trivia game"""
-        
+
         question = request.question
-        answers = {'correct':request.correct, \
-                   'wrong1': request.wrong1,  \
-                   'wrong2': request.wrong2,  \
+        answers = {'correct': request.correct,
+                   'wrong1': request.wrong1,
+                   'wrong2': request.wrong2,
                    'wrong3': request.wrong3}
 
         clues = [request.clue1, request.clue2]
@@ -229,7 +244,6 @@ class TriviaApi(remote.Service):
         newQuestion = Question.new_question(question, answers, clues)
 
         return newQuestion.to_form()
-
 
     @endpoints.method(request_message=GET_CLUE_REQUEST,
                       response_message=StringMessage,
@@ -239,7 +253,7 @@ class TriviaApi(remote.Service):
     def get_clue(self, request):
         """Retrieve a clue for a question."""
         game = get_by_urlsafe(request.urlsafe_trivia_game_key, TriviaGame)
-        if game:  
+        if game:
             if game.game_over:
                 return StringMessage(message='Game already over!')
 
@@ -249,7 +263,7 @@ class TriviaApi(remote.Service):
             question = get_by_urlsafe(turn.question_key.urlsafe(), Question)
             if turn.clues_used < 2:
                 clue = question.clues[turn.clues_used]
-                turn.usedClue()
+                turn.used_clue()
                 turn.put()
             else:
                 clue = 'You have used up all of your clues!'
@@ -300,13 +314,13 @@ class TriviaApi(remote.Service):
     def get_trivia_game_history(self, request):
         """Retrieve the history for one completed game"""
         game = get_by_urlsafe(request.urlsafe_trivia_game_key, TriviaGame)
-        if game:  
+        if game:
             q = GameSummary.query()
-            game_summary = q.filter(GameSummary.trivia_game==game.key).get()
+            game_summary = q.filter(GameSummary.trivia_game == game.key).get()
 
             if game_summary:
                 aggregates = game_summary.aggregate_data()
-                
+
                 return GameDetailForms(user_name=game_summary.user.get().name,
                                        items=game_summary.to_detail_form(),
                                        total_correct=aggregates[1],
@@ -314,7 +328,7 @@ class TriviaApi(remote.Service):
                                        total_clues_used=aggregates[3],
                                        total_points=aggregates[0])
 
-            else:                 
+            else:
                 raise endpoints.NotFoundException('Game not found!')
         else:
             raise endpoints.NotFoundException('Game not found!')
@@ -325,7 +339,10 @@ class TriviaApi(remote.Service):
                       name='get_user_trivia_game_summary',
                       http_method='GET')
     def get_user_trivia_game_summary(self, request):
-        """Returns a summary of an individual User's games"""
+        """Returns a summary of an individual User's games. This
+           includes the user name, date, number of questions answered,
+           number answered correctly and incorrectly, the number of clues
+           used and the total score for the game."""
         user = User.query(User.name == request.user_name).get()
         if not user:
             raise endpoints.NotFoundException(
@@ -339,19 +356,23 @@ class TriviaApi(remote.Service):
                       name='get_user_trivia_game_detail',
                       http_method='GET')
     def get_user_trivia_game_detail(self, request):
-        """Returns a detailed listing of an individual User's games"""
+        """Returns a detailed listing of an individual User's games. This
+           includes all questions for each game, the given answer for each
+           question, whether the given answer correct or not, how many clues
+           were used to answer each question, how many points were awarded
+           for each question and the date for the question. """
         user = User.query(User.name == request.user_name).get()
         if not user:
             raise endpoints.NotFoundException(
                     'A User with that name does not exist!')
 
-        items = [ ]
+        items = []
         data = [0, 0, 0, 0]
         summaries = GameSummary.query(GameSummary.user == user.key)
         for summary in summaries:
             items.extend(summary.to_detail_form())
-            data = [x + y for x,y in zip (data, summary.aggregate_data())]
-        
+            data = [x + y for x, y in zip(data, summary.aggregate_data())]
+
         return GameDetailForms(user_name=user.name, items=items,
                                total_correct=data[1],
                                total_incorrect=data[2],
@@ -371,8 +392,8 @@ class TriviaApi(remote.Service):
                     'A User with that name does not exist!')
 
         games = TriviaGame.query()                        \
-                .filter(TriviaGame.user==user.key)     \
-                .filter(TriviaGame.game_over == False).fetch()
+            .filter(TriviaGame.user == user.key)     \
+            .filter(TriviaGame.game_over == False).fetch()
 
         items = []
         for game in games:
@@ -393,17 +414,16 @@ class TriviaApi(remote.Service):
         """Cancel an active game."""
         game = get_by_urlsafe(request.urlsafe_trivia_game_key, TriviaGame)
         if game:
-            if game.game_over:       
+            if game.game_over:
                 return StringMessage(message='Game is over, cannot cancel!')
 
             game.clear_game()
             game.key.delete()
 
             return StringMessage(message='Game cancelled!')
-            
+
         else:
             raise endpoints.NotFoundException('Game not found!')
-
 
     @endpoints.method(request_message=USER_REQUEST,
                       response_message=ScoreForm,
@@ -417,16 +437,25 @@ class TriviaApi(remote.Service):
             raise endpoints.NotFoundException(
                     'A User with that name does not exist!')
         score = Score.query(Score.user == user.key).get()
-        return score.to_score_form()
+        if score:
+            return score.to_score_form()
+        else:
+            raise endpoints.NotFoundException('Score not found!')
 
-    @endpoints.method(request_message=GENERIC_GET_REQUEST,
+    @endpoints.method(request_message=HI_SCORE_GET_REQUEST,
                       response_message=ScoreForms,
-                      path='scores/highscores',
+                      path='scores/highscores/{result_num}',
                       name='get_high_scores',
                       http_method='GET')
     def get_high_scores(self, request):
         """Retrieve the high scores to date."""
-        scores = Score.query().order(-Score.score).fetch()
+        sq = Score.query().order(-Score.score)
+
+        if request.result_num > 0:
+            scores = sq.fetch(limit=request.result_num)
+        else:
+            scores = sq.fetch()
+
         return ScoreForms(items=[score.to_score_form() for score in scores])
 
     @endpoints.method(request_message=GENERIC_GET_REQUEST,
@@ -450,9 +479,10 @@ class TriviaApi(remote.Service):
 
         ranks = sorted(ranks, reverse=True, key=getFirstKey)
 
-        rankings = [RankForm(name=rank[0],ranking=rank[1]) for rank in ranks]
+        rankings = [RankForm(name=rank[0], ranking=rank[1]) for rank in ranks]
 
         return RankForms(items=rankings)
-        
+
 
 api = endpoints.api_server([TriviaApi])
+
