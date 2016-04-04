@@ -11,8 +11,7 @@ in the API section of the document.
 Each question is made up of the question, 1 correct answer, 3 wrong answers and
 2 clues.
 
-TESTING
-======
+**TESTING**
 
 For the purposes of testing 5 - 10 questions have been preloaded into the trivia
 game application.
