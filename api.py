@@ -143,7 +143,7 @@ class TriviaApi(remote.Service):
                       name='get_trivia_game',
                       http_method='GET')
     def get_trivia_game(self, request):
-        """Return the current game state."""
+        """Return the current game state. Requires urlsafe_trivia_game_key"""
         game = get_by_urlsafe(request.urlsafe_trivia_game_key, TriviaGame)
         if game:
             user_key = game.user
@@ -174,7 +174,8 @@ class TriviaApi(remote.Service):
                       name='take_turn',
                       http_method='PUT')
     def take_turn(self, request):
-        """ Take turn by answering a question in the triviagame"""
+        """ Take turn by answering a question in the triviagame. Requires
+            urlsafe_trivia_game_key and answer."""
         # Get the game in question
         game = get_by_urlsafe(request.urlsafe_trivia_game_key, TriviaGame)
 
@@ -255,7 +256,7 @@ class TriviaApi(remote.Service):
                       name='get_clue',
                       http_method='GET')
     def get_clue(self, request):
-        """Retrieve a clue for a question."""
+        """Retrieve a clue for a question. Requires urlsafe_trivia_game_key"""
         game = get_by_urlsafe(request.urlsafe_trivia_game_key, TriviaGame)
         if game:
             if game.game_over:
@@ -298,7 +299,8 @@ class TriviaApi(remote.Service):
                       name='answer_question',
                       http_method='POST')
     def answer_question(self, request):
-        """Answer a question and check correctness"""
+        """Answer a question and check correctness. Requires urlsafe_question_key
+           and answer"""
         wsqk = request.urlsafe_question_key
         question = get_by_urlsafe(wsqk, Question)
 
@@ -316,7 +318,8 @@ class TriviaApi(remote.Service):
                       name='get_trivia_game_history',
                       http_method='GET')
     def get_trivia_game_history(self, request):
-        """Retrieve the history for one completed game"""
+        """Retrieve the history for one completed game. Requires
+           urlsafe_trivia_game_key."""
         game = get_by_urlsafe(request.urlsafe_trivia_game_key, TriviaGame)
         if game:
             q = GameSummary.query()
@@ -346,7 +349,7 @@ class TriviaApi(remote.Service):
         """Returns a summary of an individual User's games. This
            includes the user name, date, number of questions answered,
            number answered correctly and incorrectly, the number of clues
-           used and the total score for the game."""
+           used and the total score for the game. Requires user_name."""
         user = User.query(User.name == request.user_name).get()
         if not user:
             raise endpoints.NotFoundException(
@@ -364,7 +367,8 @@ class TriviaApi(remote.Service):
            includes all questions for each game, the given answer for each
            question, whether the given answer correct or not, how many clues
            were used to answer each question, how many points were awarded
-           for each question and the date for the question. """
+           for each question and the date for the question.
+           Requires user_name. """
         user = User.query(User.name == request.user_name).get()
         if not user:
             raise endpoints.NotFoundException(
@@ -389,7 +393,7 @@ class TriviaApi(remote.Service):
                       name='get_user_games',
                       http_method='GET')
     def get_user_games(self, request):
-        """Returns the active games of a user"""
+        """Returns the active games of a user. Requires user_name"""
         user = User.query(User.name == request.user_name).get()
         if not user:
             raise endpoints.NotFoundException(
@@ -415,7 +419,7 @@ class TriviaApi(remote.Service):
                       name='cancel_trivia_game',
                       http_method='DELETE')
     def cancel_trivia_game(self, request):
-        """Cancel an active game."""
+        """Cancel an active game. Requires urlsafe_trivia_game_key."""
         game = get_by_urlsafe(request.urlsafe_trivia_game_key, TriviaGame)
         if game:
             if game.game_over:
@@ -435,7 +439,7 @@ class TriviaApi(remote.Service):
                       name='get_user_score',
                       http_method='GET')
     def get_user_score(self, request):
-        """Returns an individual User's scores"""
+        """Returns an individual User's scores. Requires user_name."""
         user = User.query(User.name == request.user_name).get()
         if not user:
             raise endpoints.NotFoundException(
@@ -452,7 +456,8 @@ class TriviaApi(remote.Service):
                       name='get_high_scores',
                       http_method='GET')
     def get_high_scores(self, request):
-        """Retrieve the high scores to date."""
+        """Retrieve the high scores to date. Optionally accepts
+           result_num which is the number of results wanted."""
         sq = Score.query().order(-Score.score)
 
         if request.result_num > 0:
