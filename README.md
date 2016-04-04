@@ -11,6 +11,12 @@ in the API section of the document.
 Each question is made up of the question, 1 correct answer, 3 wrong answers and
 2 clues.
 
+TESTING
+======
+
+For the purposes of testing 5 - 10 questions have been preloaded into the trivia
+game application.
+
 Users are registered to play via the create_user method.
 
 
@@ -87,6 +93,8 @@ If you do not wish to finish a game you can cancel it with the
 cancel_trivia_game method. Note you can only use this for active games.
 
 **OTHER**
+If you run out of questions before you run out of rounds then the game will
+end on the last question answered.
 
 You can always get your cumulative score with the get_user_score method, which
 takes the user name as an input parameter
