@@ -110,6 +110,9 @@ class TriviaGame(ndb.Model):
         self.put()
 
     def get_latest_turn(self):
+        if len(self.turn_keys) == 0:
+            return None
+
         return self.turn_keys[-1]
 
     def get_current_question(self):

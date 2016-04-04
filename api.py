@@ -184,6 +184,10 @@ class TriviaApi(remote.Service):
         game.rounds_remaining -= 1
 
         turn_key = game.get_latest_turn()
+
+        if not turn_key:
+            return game.to_form('Please get a game before taking a turn!')
+
         turn = get_by_urlsafe(turn_key.urlsafe(), Turn)
 
         question = get_by_urlsafe(turn.question_key.urlsafe(), Question)
